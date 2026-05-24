@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>税务演习 · 兼职税法闯关</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #eef2f8;
+            min-height: 100vh;
+        }
+
+        /* 启动页面 */
+        .launcher {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(145deg, #dce5f0, #f0f5fc);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+            transition: opacity 0.5s;
+        }
+
+        .launcher.hide {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .launcher-logo {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .launcher-logo .icon {
+            font-size: 80px;
+        }
+
+        .launcher-logo h1 {
+            font-size: 32px;
+            color: #1a4d8c;
+            margin-top: 16px;
+        }
+
+        .start-btn {
+            background: #3a7bc8;
+            border: none;
+            padding: 16px 48px;
+            border-radius: 60px;
+            font-size: 20px;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+        }
+
+        /* 游戏主界面 */
+        .game-container {
+            max-width: 550px;
+            margin: 0 auto;
+            padding: 12px 12px 80px;
+            min-height: 100vh;
+        }
+
+        .top-bar {
+            background: white;
+            border-radius: 32px;
+            padding: 12px 20px;
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .stamina {
+            background: #f0f4fa;
+            padding: 6px 16px;
+            border-radius: 40px;
+            font-weight: bold;
+            color: #2c5a8c;
+        }
+
+        /* 关卡地图 */
+        .map-grid {
+            background: white;
+            border-radius: 28px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .scene-card {
+            background: #f8fafd;
+            border-radius: 24px;
+            padding: 16px;
+            margin-bottom: 16px;
+            border: 1px solid #e0e8f2;
+        }
+
+        .scene-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .scene-title {
+            font-weight: bold;
+            font-size: 18px;
+            color: #1a4d8c;
+        }
+
+        .scene-stats {
+            font-size: 14px;
+            color: #8a9abb;
+        }
+
+        .question-list {
+            display: none;
+            margin-top: 12px;
+            border-top: 1px solid #e0e8f2;
+            padding-top: 12px;
+        }
+
+        .question-list.show {
+            display: block;
+        }
+
+        .q-item {
+            background: white;
+            border-radius: 16px;
+            padding: 12px;
+            margin: 8px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #e0e8f2;
+            cursor: pointer;
+        }
+
+        .q-status {
+            font-size: 18px;
+        }
+
+        /* 底部导航 */
+        .bottom-nav {
+            position: fixed;
+            bottom: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 24px);
+            max-width: 520px;
+            background: white;
+            border-radius: 60px;
+            display: flex;
+            padding: 8px;
+            border: 1px solid #dce5f0;
+            justify-content: space-around;
+        }
+
+        .nav-item {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            border-radius: 40px;
+            cursor: pointer;
+            color: #8a9abb;
+        }
+
+        .nav-item.active {
+            background: #3a7bc8;
+            color: white;
+        }
+
+        /* 答题弹窗 */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+            z-index: 300;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            visibility: hidden;
+            opacity: 0;
+            transition: 0.2s;
+        }
+
+        .modal.show {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 32px;
+            width: 90%;
+            max-width: 460px;
+            padding: 24px;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        .question {
+            background: #f0f4fa;
+            padding: 20px;
+            border-radius: 20px;
+            margin: 12px 0;
+            font-size: 16px;
+        }
+
+        .option {
+            background: #f8fafd;
+            border: 1px solid #dce5f0;
+            border-radius: 60px;
+            padding: 12px 16px;
+            margin: 10px 0;
+            cursor: pointer;
+        }
+
+        .feedback {
+            margin-top: 12px;
+            padding: 12px;
+            border-radius: 16px;
+            font-size: 14px;
+        }
+
+        .feedback.correct {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .feedback.wrong {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .btn-next, .btn-back {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 60px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .btn-next {
+            background: #3a7bc8;
+            color: white;
+        }
+
+        .btn-back {
+            background: #e0e8f2;
+            color: #1a4d8c;
+        }
+
+        /* 评分弹窗 */
+        .score-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(8px);
+            z-index: 400;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            visibility: hidden;
+            opacity: 0;
+            transition: 0.2s;
+        }
+
+        .score-modal.show {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .score-card {
+            background: white;
+            border-radius: 40px;
+            width: 85%;
+            max-width: 400px;
+            padding: 32px 24px;
+            text-align: center;
+        }
+
+        .score-number {
+            font-size: 56px;
+            font-weight: bold;
+            color: #1a4d8c;
+            margin: 16px 0;
+        }
+
+        .score-grade {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .grade-s {
+            color: #ffc107;
+        }
+        .grade-a {
+            color: #28a745;
+        }
+        .grade-b {
+            color: #17a2b8;
+        }
+        .grade-c {
+            color: #fd7e14;
+        }
+        .grade-d {
+            color: #dc3545;
+        }
+
+        .score-detail {
+            background: #f0f4fa;
+            padding: 16px;
+            border-radius: 24px;
+            margin: 20px 0;
+            font-size: 14px;
+        }
+
+        .close-score {
+            background: #3a7bc8;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 60px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* 其他模块 */
+        .card {
+            background: white;
+            border-radius: 24px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .calc-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f8fafd;
+            padding: 12px;
+            border-radius: 20px;
+            margin: 12px 0;
+        }
+
+        select, input {
+            background: white;
+            border: 1px solid #dce5f0;
+            padding: 8px 12px;
+            border-radius: 40px;
+            width: 55%;
+        }
+
+        .btn {
+            background: #3a7bc8;
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 12px;
+            border-radius: 40px;
+            font-weight: bold;
+            margin: 12px 0;
+            cursor: pointer;
+        }
+
+        .flex-between {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+        }
+
+        .hide {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<!-- 启动页面 -->
+<div id="launcher" class="launcher">
+    <div class="launcher-logo">
+        <div class="icon">📋</div>
+        <h1>税务演习 · 兼职税法</h1>
+        <p>学税法 · 算薪资 · 防踩坑</p>
+    </div>
+    <button class="start-btn" id="startBtn">开始学习</button>
+    <div style="position: absolute; bottom: 30px; font-size: 12px; color:#8a9abb;">4大场景 · 20道题 · 多场景计算器</div>
+</div>
+
+<!-- 游戏主界面 -->
+<div id="gameMain" style="display: none;">
+    <div class="game-container">
+        <!-- 顶部栏 -->
+        <div class="top-bar">
+            <span class="player-name">📖 税务学员</span>
+            <div class="stamina">⚡ 体力 <span id="staminaValue">20</span></div>
+        </div>
+
+        <!-- 模块1：闯关地图 -->
+        <div id="mapModule">
+            <div class="map-grid" id="mapContainer"></div>
+        </div>
+
+        <!-- 模块2：薪资计算器 -->
+        <div id="calcModule" class="hide">
+            <div class="card">
+                <h3 style="margin-bottom: 16px;">💰 兼职薪资计算器</h3>
+                <div class="calc-row">
+                    <span>兼职类型</span>
+                    <select id="jobType">
+                        <option value="tutor">📚 家教辅导</option>
+                        <option value="flyer">📄 传单派发</option>
+                        <option value="intern">🏢 企业实习</option>
+                        <option value="media">🎬 自媒体接单</option>
+                        <option value="delivery">🛵 外卖配送</option>
+                        <option value="writing">✍️ 稿酬写作</option>
+                    </select>
+                </div>
+                <div class="calc-row">
+                    <span>收入金额（元）</span>
+                    <input type="number" id="incomeAmount" value="1000">
+                </div>
+                <button class="btn" id="calcBtn">计算税后到手</button>
+                <div id="calcResult" style="margin-top: 16px; display: none;">
+                    <div class="flex-between"><span>税前收入</span><strong id="preTax">0</strong> 元</div>
+                    <div class="flex-between"><span>应缴个税</span><strong id="taxAmt">0</strong> 元</div>
+                    <div class="flex-between"><span>实际到手</span><strong id="afterTax">0</strong> 元</div>
+                    <div id="calcRule" style="background:#f0f4fa; padding:12px; border-radius:16px; margin-top:12px; font-size:13px;"></div>
+                </div>
+            </div>
+            <div class="card">
+                <h4>📖 各兼职计税规则</h4>
+                <div style="font-size:13px; line-height:1.8; color:#5a6e8a;">
+                    家教/传单/外卖：劳务报酬，≤800免税，800-4000扣20%，＞4000扣20%费用后20%<br>
+                    企业实习：工资薪金，≤5000免税<br>
+                    自媒体/稿酬：预扣20%费用后按20%，且稿酬减按70%计算
+                </div>
+            </div>
+        </div>
+
+        <!-- 模块3：个人中心 -->
+        <div id="profileModule" class="hide">
+            <div class="card">
+                <h3>📋 学习档案</h3>
+                <div class="flex-between"><span>✅ 已完成</span><span id="passedCount">0</span><span> / 20</span></div>
+                <div class="flex-between"><span>⚡ 剩余体力</span><span id="profileStamina">20</span></div>
+                <div class="flex-between"><span>🧮 计算器使用</span><span id="calcTimes">0</span> 次</div>
+                <div class="flex-between"><span>📊 正确率</span><span id="accuracyRate">0%</span></div>
+            </div>
+            <div class="card">
+                <h4>📚 税法知识点</h4>
+                <div style="font-size:13px; line-height:1.7;">
+                    • 劳务报酬 ≤800元 → 免税<br>
+                    • 800＜劳务≤4000 → (收入-800)×20%<br>
+                    • 劳务＞4000 → 收入×80%×20%<br>
+                    • 实习工资 ≤5000元 → 免税<br>
+                    • 稿酬所得 → 收入×56%×20%<br>
+                    • 每年3-6月个税汇算可退税
+                </div>
+            </div>
+        </div>
+
+        <!-- 底部导航 -->
+        <div class="bottom-nav">
+            <div class="nav-item active" data-nav="map">🗺️ 闯关</div>
+            <div class="nav-item" data-nav="calc">💰 计算器</div>
+            <div class="nav-item" data-nav="profile">📘 档案</div>
+        </div>
+    </div>
+</div>
+
+<!-- 答题弹窗 -->
+<div id="quizModal" class="modal">
+    <div class="modal-content">
+        <div style="font-weight: bold; margin-bottom: 8px;" id="modalTitle"></div>
+        <div class="question" id="modalQuestion"></div>
+        <div id="modalOptions"></div>
+        <div id="modalFeedback"></div>
+        <div class="btn-group">
+            <button class="btn-back" id="backToMapBtn">🗺️ 返回地图</button>
+            <button class="btn-next" id="nextQuestionBtn">➡️ 下一题</button>
+        </div>
+    </div>
+</div>
+
+<!-- 评分弹窗 -->
+<div id="scoreModal" class="score-modal">
+    <div class="score-card">
+        <div style="font-size: 48px;">📊</div>
+        <h2>闯关完成！</h2>
+        <div class="score-number" id="scoreNumber">0/20</div>
+        <div class="score-grade" id="scoreGrade"></div>
+        <div class="score-detail" id="scoreDetail"></div>
+        <button class="close-score" id="closeScoreBtn">继续学习</button>
+    </div>
+</div>
+
+<script>
+    // ==================== 题库：4个场景 × 5题 = 20题 ====================
+    const SCENES = [
+        { name: "📚 场景一 · 家教辅导", desc: "劳务报酬类兼职",
+          questions: [
+              { text: "你给学生家教，单次收入750元，家长说要扣30元个税，该怎么做？", 
+                options: ["A. 同意扣款，正常缴税", "B. 750＜800元，依法免税，拒绝不合理扣款", "C. 扣15元就行", "D. 家教不用交税"],
+                correct: 1, explanation: "根据《个人所得税法》，单次劳务报酬不超过800元免征个税，750元不应扣税。" },
+              { text: "家教单次收入1200元，按税法应缴多少税？", 
+                options: ["A. 0元", "B. (1200-800)×20% = 80元", "C. 1200×20% = 240元", "D. 1200×10% = 120元"],
+                correct: 1, explanation: "劳务报酬800-4000元之间，应纳税额=(收入-800)×20% = 400×20% = 80元。" },
+              { text: "暑假做家教总收入5000元（分5次，每次1000元），共需缴税？", 
+                options: ["A. 0元，每次低于800免税", "B. 按总额5000计算缴税", "C. 每次(1000-800)×20%=40元，共200元", "D. 5000×20%=1000元"],
+                correct: 2, explanation: "劳务报酬按次计算，每次1000元，单次应纳税(1000-800)×20%=40元，5次共200元。" },
+              { text: "家教收入属于哪类所得？", 
+                options: ["A. 工资薪金", "B. 劳务报酬", "C. 经营所得", "D. 偶然所得"],
+                correct: 1, explanation: "家教属于个人独立提供劳务，按劳务报酬所得计税。" },
+              { text: "下列哪种情况家教收入不用缴税？", 
+                options: ["A. 单次850元", "B. 单次800元", "C. 单次1000元", "D. 单次2000元"],
+                correct: 1, explanation: "劳务报酬≤800元免征个税，800元整也属于免税范围。" }
+          ] },
+        { name: "📄 场景二 · 传单/外卖", desc: "灵活用工税务",
+          questions: [
+              { text: "发传单日结200元（微信转账），需要缴税吗？", 
+                options: ["A. 需要，微信也要交税", "B. 不需要，200＜800免税", "C. 需要交20元", "D. 微信转账不交税"],
+                correct: 1, explanation: "无论支付方式，单次劳务≤800元均免征个税。" },
+              { text: "外卖骑手单月收入6000元（按劳务报酬），应缴税？", 
+                options: ["A. 0元", "B. 6000×80%×20%=960元", "C. 6000×20%=1200元", "D. (6000-800)×20%=1040元"],
+                correct: 1, explanation: "劳务报酬＞4000元，应纳税=收入×80%×20%=6000×0.8×0.2=960元。" },
+              { text: "传单工作单次收入2500元，税后到手多少？", 
+                options: ["A. 2500元", "B. 2500-(2500-800)×20%=2160元", "C. 2500×80%=2000元", "D. 2500×20%=500元"],
+                correct: 1, explanation: "2500在800-4000之间，应纳税(2500-800)×20%=340元，到手2160元。" },
+              { text: "以下哪种灵活用工收入计税方式不同？", 
+                options: ["A. 发传单", "B. 外卖配送", "C. 企业实习", "D. 家教"],
+                correct: 2, explanation: "企业实习属于工资薪金，按累计预扣法，其他为劳务报酬。" },
+              { text: "单次劳务报酬4000元，应纳税多少？", 
+                options: ["A. 0元", "B. (4000-800)×20%=640元", "C. 4000×80%×20%=640元", "D. 4000×20%=800元"],
+                correct: 2, explanation: "4000元是分界线，两种算法结果相同，均为640元。" }
+          ] },
+        { name: "🏢 场景三 · 企业实习", desc: "工资薪金类",
+          questions: [
+              { text: "实习月薪4800元，需要缴个税吗？", 
+                options: ["A. 需要，按劳务算", "B. 不需要，5000以下免税", "C. 需要交96元", "D. 需要交20%"],
+                correct: 1, explanation: "实习工资按工资薪金累计预扣，月收入≤5000元免征个税。" },
+              { text: "实习月薪6000元，应缴个税？", 
+                options: ["A. 0元", "B. (6000-5000)×3%=30元", "C. 6000×10%=600元", "D. (6000-800)×20%=1040元"],
+                correct: 1, explanation: "超出5000部分按3%预扣：1000×3%=30元。" },
+              { text: "实习期间个税由谁代扣？", 
+                options: ["A. 自己申报", "B. 实习单位代扣代缴", "C. 税务局直接扣", "D. 不用扣"],
+                correct: 1, explanation: "单位发放工资时有代扣代缴个人所得税的法定义务。" },
+              { text: "实习工资和劳务报酬最大的区别？", 
+                options: ["A. 税率不同", "B. 起征点不同，实习5000元起征，劳务800元起征", "C. 免税额度相同", "D. 没有区别"],
+                correct: 1, explanation: "实习按工资薪金5000元起征，劳务按800元起征。" },
+              { text: "年度汇算时，实习多缴的税可以？", 
+                options: ["A. 不能退", "B. 可以在个税APP申请退税", "C. 只能补不能退", "D. 实习不参与汇算"],
+                correct: 1, explanation: "每年3-6月可通过个税APP办理汇算清缴，多退少补。" }
+          ] },
+        { name: "🎬 场景四 · 自媒体/稿酬", desc: "特殊计税",
+          questions: [
+              { text: "自媒体广告收入8000元（劳务报酬），应缴税？", 
+                options: ["A. 0元", "B. 8000×80%×20%=1280元", "C. 8000×20%=1600元", "D. (8000-800)×20%=1440元"],
+                correct: 1, explanation: "劳务报酬＞4000元，应纳税=收入×80%×20%=1280元。" },
+              { text: "稿酬所得计税有什么优惠？", 
+                options: ["A. 全额免税", "B. 减按70%计算收入", "C. 固定税率5%", "D. 没有优惠"],
+                correct: 1, explanation: "稿酬所得在扣除20%费用后，再减按70%计算，实际税负更低。" },
+              { text: "稿酬收入5000元，应缴税多少？", 
+                options: ["A. 5000×80%×70%×20%=560元", "B. 5000×20%=1000元", "C. 5000×80%×20%=800元", "D. 0元"],
+                correct: 0, explanation: "稿酬应纳税=收入×80%×70%×20% = 5000×0.8×0.7×0.2 = 560元。" },
+              { text: "自媒体收入是否需要申报？", 
+                options: ["A. 不需要", "B. 需要，平台会代扣", "C. 只有超过10万才需要", "D. 自媒体免税"],
+                correct: 1, explanation: "自媒体平台通常按劳务报酬代扣个税，收入需依法纳税。" },
+              { text: "以下哪项属于稿酬所得？", 
+                options: ["A. 直播打赏", "B. 发表文章稿费", "C. 广告代言", "D. 讲课费"],
+                correct: 1, explanation: "稿酬所得指个人作品以图书、报刊等形式出版、发表取得的收入。" }
+          ] }
+    ];
+
+    // 游戏状态
+    let totalQuestions = 20;
+    let stamina = 20;
+    let calcTimes = 0;
+    let userAnswers = []; // 记录每道题的答案是否正确 { scene, qIndex, isCorrect }
+    let currentScene = 0, currentQIndex = 0;
+    let nextQuestionQueued = false;
+
+    // 初始化进度
+    function initProgress() {
+        let saved = localStorage.getItem("tax_progress_v3");
+        if(saved) {
+            userAnswers = JSON.parse(saved);
+            stamina = localStorage.getItem("tax_stamina_v3") ? parseInt(localStorage.getItem("tax_stamina_v3")) : 20;
+            calcTimes = localStorage.getItem("tax_calcTimes_v3") ? parseInt(localStorage.getItem("tax_calcTimes_v3")) : 0;
+        } else {
+            userAnswers = [];
+            stamina = 20;
+            calcTimes = 0;
+        }
+        // 确保userAnswers有20个记录
+        for(let s=0; s<SCENES.length; s++) {
+            for(let q=0; q<SCENES[s].questions.length; q++) {
+                const exists = userAnswers.find(a => a.scene === s && a.qIndex === q);
+                if(!exists) {
+                    userAnswers.push({ scene: s, qIndex: q, isCorrect: false, answered: false });
+                }
+            }
+        }
+        saveProgress();
+    }
+
+    function saveProgress() {
+        localStorage.setItem("tax_progress_v3", JSON.stringify(userAnswers));
+        localStorage.setItem("tax_stamina_v3", stamina);
+        localStorage.setItem("tax_calcTimes_v3", calcTimes);
+    }
+
+    function getCompletedCount() {
+        return userAnswers.filter(a => a.answered === true).length;
+    }
+
+    function getCorrectCount() {
+        return userAnswers.filter(a => a.isCorrect === true).length;
+    }
+
+    function getNextUnansweredQuestion() {
+        for(let a of userAnswers) {
+            if(!a.answered) {
+                return { scene: a.scene, qIndex: a.qIndex };
+            }
+        }
+        return null;
+    }
+
+    function isAllCompleted() {
+        return getCompletedCount() === totalQuestions;
+    }
+
+    function recordAnswer(sceneIdx, qIdx, isCorrect) {
+        const answer = userAnswers.find(a => a.scene === sceneIdx && a.qIndex === qIdx);
+        if(answer && !answer.answered) {
+            answer.isCorrect = isCorrect;
+            answer.answered = true;
+            saveProgress();
+            return true;
+        }
+        return false;
+    }
+
+    function consumeStamina() {
+        if(stamina > 0) {
+            stamina--;
+            saveProgress();
+            updateUI();
+            return true;
+        } else {
+            alert("体力不足！无法继续答题。");
+            return false;
+        }
+    }
+
+    // 显示评分弹窗
+    function showScoreModal() {
+        const correct = getCorrectCount();
+        const total = totalQuestions;
+        const percentage = Math.round((correct / total) * 100);
+        
+        let grade = "";
+        let gradeClass = "";
+        if(percentage >= 90) { grade = "S · 税务大师"; gradeClass = "grade-s"; }
+        else if(percentage >= 80) { grade = "A · 优秀学员"; gradeClass = "grade-a"; }
+        else if(percentage >= 70) { grade = "B · 良好"; gradeClass = "grade-b"; }
+        else if(percentage >= 60) { grade = "C · 及格"; gradeClass = "grade-c"; }
+        else { grade = "D · 继续努力"; gradeClass = "grade-d"; }
+        
+        document.getElementById("scoreNumber").innerHTML = `${correct}/${total}`;
+        document.getElementById("scoreGrade").innerHTML = `<span class="${gradeClass}">${grade}</span>`;
+        document.getElementById("scoreDetail").innerHTML = `
+            正确率：${percentage}%<br>
+            答对 ${correct} 题，答错 ${total - correct} 题<br>
+            ${percentage >= 60 ? "🎉 恭喜通过！" : "📚 再多学习一下税法知识吧～"}
+        `;
+        document.getElementById("scoreModal").classList.add("show");
+    }
+
+    function renderMap() {
+        const container = document.getElementById("mapContainer");
+        if(!container) return;
+        container.innerHTML = "";
+        
+        for(let s=0; s<SCENES.length; s++) {
+            const scene = SCENES[s];
+            const sceneCompleted = userAnswers.filter(a => a.scene === s && a.answered === true).length;
+            const sceneTotal = scene.questions.length;
+            
+            const sceneDiv = document.createElement("div");
+            sceneDiv.className = "scene-card";
+            sceneDiv.innerHTML = `
+                <div class="scene-header" data-scene="${s}">
+                    <span class="scene-title">${scene.name}</span>
+                    <span class="scene-stats">${sceneCompleted}/${sceneTotal}</span>
+                </div>
+                <div class="question-list" id="qlist-${s}">
+                    ${scene.questions.map((q, idx) => {
+                        const answer = userAnswers.find(a => a.scene === s && a.qIndex === idx);
+                        const status = answer?.answered ? (answer.isCorrect ? '✅' : '❌') : '📝';
+                        return `
+                            <div class="q-item" data-scene="${s}" data-qidx="${idx}">
+                                <span>第${idx+1}题：${q.text.substring(0, 35)}...</span>
+                                <span class="q-status">${status}</span>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+            container.appendChild(sceneDiv);
+            
+            const header = sceneDiv.querySelector(".scene-header");
+            const qlist = sceneDiv.querySelector(`#qlist-${s}`);
+            header.addEventListener("click", () => {
+                qlist.classList.toggle("show");
+            });
+            qlist.classList.remove("show");
+            
+            sceneDiv.querySelectorAll(".q-item").forEach(item => {
+                item.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    const scene = parseInt(item.dataset.scene);
+                    const qidx = parseInt(item.dataset.qidx);
+                    const answer = userAnswers.find(a => a.scene === scene && a.qIndex === qidx);
+                    if(answer?.answered) {
+                        // 已答过的题，显示回顾
+                        reviewQuestion(scene, qidx);
+                    } else {
+                        openQuiz(scene, qidx);
+                    }
+                });
+            });
+        }
+        updateUI();
+    }
+
+    function reviewQuestion(sceneIdx, qIdx) {
+        const q = SCENES[sceneIdx].questions[qIdx];
+        const answer = userAnswers.find(a => a.scene === sceneIdx && a.qIndex === qIdx);
+        const isCorrect = answer?.isCorrect || false;
+        
+        document.getElementById("modalTitle").innerHTML = `${SCENES[sceneIdx].name} · 第${qIdx+1}题（回顾）`;
+        document.getElementById("modalQuestion").innerHTML = q.text;
+        const optsDiv = document.getElementById("modalOptions");
+        optsDiv.innerHTML = "";
+        q.options.forEach((opt, idx) => {
+            const btn = document.createElement("div");
+            btn.className = "option";
+            btn.innerText = opt;
+            if(idx === q.correct) {
+                btn.style.border = "2px solid #28a745";
+                btn.style.background = "#d4edda";
+            }
+            if(answer?.answered && idx === q.correct) {
+                // 高亮正确答案
+            }
+            btn.style.pointerEvents = "none";
+            btn.style.opacity = "0.8";
+            optsDiv.appendChild(btn);
+        });
+        const fbDiv = document.getElementById("modalFeedback");
+        if(isCorrect) {
+            fbDiv.innerHTML = `<div class="feedback correct">✅ 你之前答对了！<br>📖 ${q.explanation}</div>`;
+        } else {
+            const correctAns = q.options[q.correct];
+            fbDiv.innerHTML = `<div class="feedback wrong">❌ 你之前答错了<br>正确答案：${correctAns}<br>📖 ${q.explanation}</div>`;
+        }
+        document.getElementById("nextQuestionBtn").style.display = "none";
+        document.getElementById("quizModal").classList.add("show");
+    }
+
+    function openQuiz(sceneIdx, qIdx) {
+        const q = SCENES[sceneIdx].questions[qIdx];
+        currentScene = sceneIdx;
+        currentQIndex = qIdx;
+        nextQuestionQueued = false;
+        
+        document.getElementById("modalTitle").innerHTML = `${SCENES[sceneIdx].name} · 第${qIdx+1}题`;
+        document.getElementById("modalQuestion").innerHTML = q.text;
+        const optsDiv = document.getElementById("modalOptions");
+        optsDiv.innerHTML = "";
+        q.options.forEach((opt, idx) => {
+            const btn = document.createElement("div");
+            btn.className = "option";
+            btn.innerText = opt;
+            btn.onclick = () => checkAnswer(sceneIdx, qIdx, idx);
+            optsDiv.appendChild(btn);
+        });
+        document.getElementById("modalFeedback").innerHTML = "";
+        document.getElementById("nextQuestionBtn").style.display = "block";
+        document.getElementById("nextQuestionBtn").innerText = "➡️ 下一题";
+        document.querySelectorAll(".option").forEach(btn => {
+            btn.style.pointerEvents = "auto";
+            btn.style.opacity = "1";
+        });
+        document.getElementById("quizModal").classList.add("show");
+    }
+
+    function checkAnswer(sceneIdx, qIdx, selectedIdx) {
+        const answer = userAnswers.find(a => a.scene === sceneIdx && a.qIndex === qIdx);
+        if(answer?.answered) {
+            document.getElementById("modalFeedback").innerHTML = `<div class="feedback correct">✅ 这题你已经答过了！继续下一题吧</div>`;
+            return;
+        }
+        
+        const q = SCENES[sceneIdx].questions[qIdx];
+        const isCorrect = (selectedIdx === q.correct);
+        const fbDiv = document.getElementById("modalFeedback");
+        
+        if(isCorrect) {
+            fbDiv.innerHTML = `<div class="feedback correct">✅ 回答正确！<br>📖 ${q.explanation}</div>`;
+        } else {
+            const correctAns = q.options[q.correct];
+            fbDiv.innerHTML = `<div class="feedback wrong">❌ 回答错误<br>正确答案：${correctAns}<br>📖 ${q.explanation}</div>`;
+        }
+        
+        // 扣体力、记录答案
+        if(consumeStamina()) {
+            recordAnswer(sceneIdx, qIdx, isCorrect);
+        }
+        
+        // 禁用选项
+        document.querySelectorAll(".option").forEach(btn => {
+            btn.style.pointerEvents = "none";
+            btn.style.opacity = "0.6";
+        });
+        
+        // 检查是否全部完成
+        if(isAllCompleted()) {
+            document.getElementById("nextQuestionBtn").innerText = "🏆 查看评分";
+        } else {
+            document.getElementById("nextQuestionBtn").innerText = "➡️ 下一题";
+        }
+    }
+
+    function goToNextOrScore() {
+        if(nextQuestionQueued) return;
+        nextQuestionQueued = true;
+        
+        // 关闭弹窗
+        document.getElementById("quizModal").classList.remove("show");
+        
+        setTimeout(() => {
+            if(isAllCompleted()) {
+                // 全部完成，显示评分
+                showScoreModal();
+            } else {
+                // 找到下一道未答题
+                let next = getNextUnansweredQuestion();
+                if(next) {
+                    openQuiz(next.scene, next.qIndex);
+                } else {
+                    // 理论上不会到这里
+                    showScoreModal();
+                }
+            }
+            nextQuestionQueued = false;
+        }, 200);
+    }
+
+    function backToMap() {
+        document.getElementById("quizModal").classList.remove("show");
+        renderMap();
+    }
+
+    // 薪资计算器
+    function computeSalary() {
+        let jobType = document.getElementById("jobType").value;
+        let money = parseFloat(document.getElementById("incomeAmount").value);
+        if(isNaN(money) || money <= 0) { alert("请输入金额"); return; }
+        let tax = 0, rule = "";
+        
+        switch(jobType) {
+            case "tutor": case "flyer": case "delivery":
+                if(money <= 800) { tax = 0; rule = "劳务报酬≤800元，免征个税。"; }
+                else if(money <= 4000) { tax = (money-800)*0.2; rule = `劳务报酬计税：(收入-800)×20% = ${tax.toFixed(2)}元`; }
+                else { tax = money*0.8*0.2; rule = `劳务报酬计税：收入×80%×20% = ${tax.toFixed(2)}元`; }
+                break;
+            case "intern":
+                if(money <= 5000) { tax = 0; rule = "实习工资≤5000元，免征个税。"; }
+                else { tax = (money-5000)*0.03; rule = `实习工资计税：(收入-5000)×3% = ${tax.toFixed(2)}元`; }
+                break;
+            case "media":
+                if(money <= 800) { tax = 0; rule = "劳务报酬≤800元，免征个税。"; }
+                else if(money <= 4000) { tax = (money-800)*0.2; rule = `劳务报酬计税：(收入-800)×20% = ${tax.toFixed(2)}元`; }
+                else { tax = money*0.8*0.2; rule = `劳务报酬计税：收入×80%×20% = ${tax.toFixed(2)}元`; }
+                break;
+            case "writing":
+                let preIncome = money * 0.8 * 0.7;
+                tax = preIncome * 0.2;
+                rule = `稿酬所得：先扣20%费用，再减按70%计算，最后×20% = ${tax.toFixed(2)}元`;
+                break;
+        }
+        let after = money - tax;
+        document.getElementById("preTax").innerText = money.toFixed(2);
+        document.getElementById("taxAmt").innerText = tax.toFixed(2);
+        document.getElementById("afterTax").innerText = after.toFixed(2);
+        document.getElementById("calcRule").innerHTML = rule + " 每年3-6月可汇算退税。";
+        document.getElementById("calcResult").style.display = "block";
+        
+        calcTimes++;
+        saveProgress();
+        document.getElementById("calcTimes").innerText = calcTimes;
+    }
+
+    function updateUI() {
+        const completed = getCompletedCount();
+        const correct = getCorrectCount();
+        const percentage = completed > 0 ? Math.round((correct / completed) * 100) : 0;
+        document.getElementById("passedCount").innerText = completed;
+        document.getElementById("staminaValue").innerText = stamina;
+        document.getElementById("profileStamina").innerText = stamina;
+        document.getElementById("calcTimes").innerText = calcTimes;
+        document.getElementById("accuracyRate").innerText = completed > 0 ? `${percentage}%` : "0%";
+    }
+
+    function switchModule(module) {
+        document.getElementById("mapModule").classList.add("hide");
+        document.getElementById("calcModule").classList.add("hide");
+        document.getElementById("profileModule").classList.add("hide");
+        if(module === "map") document.getElementById("mapModule").classList.remove("hide");
+        if(module === "calc") document.getElementById("calcModule").classList.remove("hide");
+        if(module === "profile") document.getElementById("profileModule").classList.remove("hide");
+        document.querySelectorAll(".nav-item").forEach(btn => btn.classList.remove("active"));
+        document.querySelector(`.nav-item[data-nav="${module}"]`).classList.add("active");
+        if(module === "map") renderMap();
+        if(module === "profile") updateUI();
+    }
+
+    function startGame() {
+        document.getElementById("launcher").classList.add("hide");
+        setTimeout(() => {
+            document.getElementById("launcher").style.display = "none";
+            document.getElementById("gameMain").style.display = "block";
+            renderMap();
+        }, 300);
+    }
+
+    function bindEvents() {
+        document.getElementById("startBtn").addEventListener("click", startGame);
+        document.querySelectorAll(".nav-item").forEach(btn => {
+            btn.addEventListener("click", () => switchModule(btn.dataset.nav));
+        });
+        document.getElementById("calcBtn").addEventListener("click", computeSalary);
+        document.getElementById("nextQuestionBtn").addEventListener("click", goToNextOrScore);
+        document.getElementById("backToMapBtn").addEventListener("click", backToMap);
+        document.getElementById("closeScoreBtn").addEventListener("click", () => {
+            document.getElementById("scoreModal").classList.remove("show");
+            renderMap();
+        });
+    }
+
+    initProgress();
+    bindEvents();
+    updateUI();
+    switchModule("map");
+</script>
+</body>
+</html>
